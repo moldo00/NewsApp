@@ -7,8 +7,6 @@
 
 import Foundation
 
-import Foundation
-
 class FavoriteNewsManager {
     static let shared = FavoriteNewsManager()
     
@@ -22,16 +20,18 @@ class FavoriteNewsManager {
         if !isFavorite(newsItem) {
             favorites.append(newsItem)
             saveFavorites()
+            NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
         }
     }
     
     func removeFavorite(_ newsItem: NewsItem) {
-        favorites.removeAll { $0.title == newsItem.title }
+        favorites.removeAll { $0.id == newsItem.id }
         saveFavorites()
+        NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
     }
     
     func isFavorite(_ newsItem: NewsItem) -> Bool {
-        return favorites.contains { $0.title == newsItem.title }
+        return favorites.contains { $0.id == newsItem.id }
     }
     
     func getFavorites() -> [NewsItem] {

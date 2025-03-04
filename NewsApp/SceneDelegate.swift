@@ -17,8 +17,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let allNewsVC = UINavigationController(rootViewController: AllNewsViewController())
         allNewsVC.tabBarItem = UITabBarItem(title: "Все новости", image: UIImage(systemName: "list.bullet"), tag: 0)
 
-        let favoriteNewsVC = UINavigationController(rootViewController: FavoriteNewsViewController())  
+        let favoriteNewsVC = UINavigationController(rootViewController: FavoriteNewsViewController())
         favoriteNewsVC.tabBarItem = UITabBarItem(title: "Избранное", image: UIImage(systemName: "star.fill"), tag: 1)
+
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .systemBackground
+        allNewsVC.navigationBar.standardAppearance = appearance
+        favoriteNewsVC.navigationBar.standardAppearance = appearance
+        if #available(iOS 15.0, *) {
+            allNewsVC.navigationBar.scrollEdgeAppearance = appearance
+            favoriteNewsVC.navigationBar.scrollEdgeAppearance = appearance
+        }
 
         tabBarController.viewControllers = [allNewsVC, favoriteNewsVC]
         return tabBarController

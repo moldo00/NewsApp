@@ -5,9 +5,7 @@
 //  Created by Moldolyev Askar on 27/2/25.
 //
 
-import Foundation
-
-struct NewsItem: Codable {
+struct NewsItem: Codable, Equatable {
     let title: String
     let description: String?
     let pubDate: String
@@ -15,13 +13,16 @@ struct NewsItem: Codable {
     let imageURL: String?
     let link: String?
 
+    var id: String {
+        return "\(title)-\(pubDate)"
+    }
+
     enum CodingKeys: String, CodingKey {
         case title
         case description
         case pubDate = "pubDate"
         case creator
-        case imageURL = "image_url" 
+        case imageURL = "image_url"
         case link
     }
-    
 }

@@ -15,7 +15,7 @@ class FavoriteNewsViewController: UITableViewController {
         setupTableView()
         loadFavorites()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         loadFavorites()
@@ -35,7 +35,6 @@ class FavoriteNewsViewController: UITableViewController {
         tableView.reloadData()
     }
 
-    // MARK: - TableView DataSource
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return favoriteNews.count
     }
@@ -49,11 +48,19 @@ class FavoriteNewsViewController: UITableViewController {
         return cell
     }
 
-    // MARK: - Обработка нажатия на ячейку
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let newsItem = favoriteNews[indexPath.row]
         let detailVC = NewsDetailViewController()
         detailVC.newsItem = newsItem
         navigationController?.pushViewController(detailVC, animated: true)
+    }
+
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            let newsItem = favoriteNews[indexPath.row]
+            FavoriteNewsManager.shared.removeFavorite(newsItem)
+            favoriteNews.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath], with: .automatic)
+        }
     }
 }

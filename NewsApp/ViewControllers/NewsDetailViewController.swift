@@ -23,20 +23,17 @@ class NewsDetailViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         configure(with: newsItem)
+        setupFavoriteButton()
+        addObservers()
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
     }
 
     private func setupUI() {
         view.backgroundColor = .systemBackground
 
-        
-               favoriteButton = UIBarButtonItem(image: UIImage(systemName: "star"),
-                                                style: .plain, target: self, action: #selector(toggleFavorite))
-               navigationItem.rightBarButtonItem = favoriteButton
-               
-               
-               let descriptionLabel = UILabel()
-               descriptionLabel.text = newsItem.description
-               view.addSubview(descriptionLabel)
         
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(scrollView)
@@ -61,6 +58,7 @@ class NewsDetailViewController: UIViewController {
         
         authorLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         authorLabel.textColor = .secondaryLabel
+        authorLabel.numberOfLines = 0
         authorLabel.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(authorLabel)
 
@@ -81,14 +79,7 @@ class NewsDetailViewController: UIViewController {
         sourceButton.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(sourceButton)
 
-        
-        favoriteButton.style = .plain
-        favoriteButton.target = self
-        favoriteButton.action = #selector(toggleFavorite)
-        updateFavoriteButton()
-        navigationItem.rightBarButtonItem = favoriteButton
 
-        
         NSLayoutConstraint.activate([
             
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
@@ -133,25 +124,21 @@ class NewsDetailViewController: UIViewController {
         authorLabel.text = "Автор: \(newsItem.creator?.joined(separator: ", ") ?? "Неизвестен")"
 
         if let imageURL = newsItem.imageURL {
-            loadImage(from: imageURL)
-        }
-    }
-
-    private func loadImage(from urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        URLSession.shared.dataTask(with: url) { data, _, _ in
-            if let data = data, let image = UIImage(data: data) {
+            newsImageView.isHidden = false
+            NewsService.shared.loadImage(from: imageURL) { [weak self] image in
                 DispatchQueue.main.async {
-                    self.newsImageView.image = image
+                    self?.newsImageView.image = image
                 }
             }
-        }.resume()
+        } else {
+            newsImageView.isHidden = true
+        }
     }
 
-    @objc private func openSource() {
-        if let link = newsItem.link, let url = URL(string: link) {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
-        }
+    private func setupFavoriteButton() {
+        favoriteButton = UIBarButtonItem(image: UIImage(systemName: FavoriteNewsManager.shared.isFavorite(newsItem) ? "star.fill" : "star"),
+                                        style: .plain, target: self, action: #selector(toggleFavorite))
+        navigationItem.rightBarButtonItem = favoriteButton
     }
 
     @objc private func toggleFavorite() {
@@ -161,11 +148,29 @@ class NewsDetailViewController: UIViewController {
             FavoriteNewsManager.shared.addFavorite(newsItem)
         }
         updateFavoriteButton()
+        NotificationCenter.default.post(name: .favoritesUpdated, object: nil)
     }
 
     private func updateFavoriteButton() {
-        let isFavorite = FavoriteNewsManager.shared.isFavorite(newsItem)
-        favoriteButton.image = UIImage(systemName: isFavorite ? "star.fill" : "star")
+        favoriteButton.image = UIImage(systemName: FavoriteNewsManager.shared.isFavorite(newsItem) ? "star.fill" : "star")
     }
 
+    @objc private func openSource() {
+        if let link = newsItem.link, let url = URL(string: link) {
+            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        }
+    }
+
+    private func addObservers() {
+        NotificationCenter.default.addObserver(self, selector: #selector(handleFavoritesUpdate), name: .favoritesUpdated, object: nil)
+    }
+
+    @objc private func handleFavoritesUpdate() {
+        updateFavoriteButton()
+    }
+}
+
+// Расширение для уведомлений
+extension Notification.Name {
+    static let favoritesUpdated = Notification.Name("favoritesUpdated")
 }

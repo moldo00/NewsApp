@@ -4,13 +4,13 @@
 //
 //  Created by Moldolyev Askar on 27/2/25.
 //
-
 import UIKit
 
 class AllNewsViewController: UITableViewController {
     private var newsItems: [NewsItem] = []
-    private let newsService = NewsService()
+    private let newsService = NewsService.shared 
     private var isLoading = false
+    private var currentPage = 1
     private let activityIndicator = UIActivityIndicatorView(style: .medium)
 
     override func viewDidLoad() {
@@ -42,7 +42,7 @@ class AllNewsViewController: UITableViewController {
             self.activityIndicator.startAnimating()
         }
 
-        newsService.fetchNews { [weak self] news in
+        newsService.fetchNews { [weak self] (news: [NewsItem]?) in
             guard let self = self else { return }
             self.isLoading = false
 
@@ -78,6 +78,14 @@ class AllNewsViewController: UITableViewController {
         let newsItem = newsItems[indexPath.row]
         let detailVC = NewsDetailViewController()
         detailVC.newsItem = newsItem
-        navigationController?.pushViewController(detailVC, animated: true)  
+        navigationController?.pushViewController(detailVC, animated: true)
+    }
+
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        let offsetY = scrollView.contentOffset.y
+        let contentHeight = scrollView.contentSize.height
+        if offsetY > contentHeight - scrollView.frame.size.height {
+            loadNews()
+        }
     }
 }

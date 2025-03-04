@@ -19,14 +19,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         let favoriteNewsVC = FavoriteNewsViewController()
         favoriteNewsVC.tabBarItem = UITabBarItem(title: "Избранное", image: UIImage(systemName: "star.fill"), tag: 1)
-        
+
         let appearance = UITabBarAppearance()
-          appearance.configureWithOpaqueBackground()
-          appearance.backgroundColor = .systemBackground
-          tabBarController.tabBar.standardAppearance = appearance
-          if #available(iOS 15.0, *) {
-              tabBarController.tabBar.scrollEdgeAppearance = appearance
-          }
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = .systemBackground
+        tabBarController.tabBar.standardAppearance = appearance
+        if #available(iOS 15.0, *) {
+            tabBarController.tabBar.scrollEdgeAppearance = appearance
+        }
 
         tabBarController.viewControllers = [allNewsVC, favoriteNewsVC]
         return tabBarController
